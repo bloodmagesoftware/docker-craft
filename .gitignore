@@ -1,0 +1,11 @@
+.DS_Store
+.vs
+.vscode
+.idea
+.fleet
+.zed
+.env
+/docker-craft
+/docker-craft.exe
+docker-compose.yaml
+docker-compose.yml

@@ -1,0 +1,38 @@
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+---
+builds:
+  - main: "./main.go"
+    binary: docker-craft
+    ldflags:
+      - -X docker-craft/metadata.Version={{ .Version }}
+    goos:
+      - darwin
+      - linux
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    env:
+      - CGO_ENABLED=0
+
+checksum:
+  name_template: "checksums.txt"
+  algorithm: sha256
+
+release:
+  prerelease: auto
+
+universal_binaries:
+  - replace: false
+    mod_timestamp: "{{ .CommitTimestamp }}"
+
+brews:
+  - name: docker-craft
+    homepage: https://github.com/bloodmagesoftware/docker-craft
+    description: A Docker Compose templating plugin
+    repository:
+      owner: bloodmagesoftware
+      name: homebrew-tap
+    commit_author:
+      name: tsukinoko-kun
+      email: gh@frankmayer.dev
