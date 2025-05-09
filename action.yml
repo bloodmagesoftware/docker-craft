@@ -1,7 +1,10 @@
 # yaml-language-server: $schema=https://json.schemastore.org/github-action.json
 ---
-name: Docker Craft
+name: Docker Craft Action
 description: A Docker Compose templating plugin.
+branding:
+  color: red
+  icon: anchor
 inputs:
   input:
     description: One or more Lua files as arguments
