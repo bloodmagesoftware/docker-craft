@@ -8,6 +8,7 @@ import (
 
 	"maps"
 
+	"github.com/bloodmage-software/docker-craft/gh"
 	"github.com/bloodmage-software/docker-craft/link"
 	_ "github.com/bloodmage-software/docker-craft/metadata"
 	composetypes "github.com/compose-spec/compose-go/v2/types"
@@ -90,6 +91,8 @@ func main() {
 	ye := yaml.NewEncoder(f, yaml.Indent(int(*indent)))
 	defer ye.Close()
 	ye.Encode(config)
+
+	gh.ActionOutput("docker-compose-file", *out)
 }
 
 func mergeMaps[K comparable, V any](a, b map[K]V) map[K]V {

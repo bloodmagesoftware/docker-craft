@@ -103,6 +103,21 @@ then symlink the binary to `~/.docker/cli-plugins/`: _(requires admin privileges
 docker-craft link
 ```
 
+## GH Action
+
+```yaml
+- name: Generate docker-compose.yaml
+  id: craft_step
+  uses: bloodmagesoftware/docker-craft@v1
+  with:
+    input: docker-compose.yaml.lua # required, if you use multiple files, use a newline-separated list
+    output: docker-compose.yaml # optional
+    indentation: "2" # optional
+
+- name: Use the generated docker-compose file
+  run: docker compose -f ${{ steps.craft_step.outputs.docker-compose-file }} config
+```
+
 ## License
 
 MIT

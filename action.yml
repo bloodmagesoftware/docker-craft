@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-action.json
+---
+name: Docker Craft
+description: A Docker Compose templating plugin.
+inputs:
+  input:
+    description: One or more Lua files as arguments
+    required: true
+  output:
+    description: Output docker-compose.yaml file name
+    required: false
+    default: docker-compose.yaml
+  indentation:
+    description: Indentation level for the output file
+    required: false
+    default: "2"
+outputs:
+  docker-compose-file:
+    description: The path to the generated docker-compose.yaml file
+runs:
+  using: docker
+  image: Dockerfile
+  args:
+    - "-o"
+    - ${{ inputs.output }}
+    - "-i"
+    - ${{ inputs.indentation }}
+    - ${{ inputs.input }}
