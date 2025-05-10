@@ -4,7 +4,7 @@ builds:
   - main: "./main.go"
     binary: docker-craft
     ldflags:
-      - -X docker-craft/metadata.Version={{ .Version }}
+      - -X github.com/bloodmage-software/docker-craft/metadata.Version={{ .Version }}
     goos:
       - darwin
       - linux
