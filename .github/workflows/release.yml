@@ -1,16 +1,14 @@
 # yaml-language-server: https://raw.githubusercontent.com/SchemaStore/schemastore/master/src/schemas/json/github-workflow.json
 ---
-name: goreleaser
-
+name: release
 on:
   create:
     tags:
-      - "**"
-
+      - "v*.*.*"
 permissions:
   contents: write
   packages: write
-  # issues: write
+  actions: write
 
 jobs:
   goreleaser:
@@ -24,16 +22,38 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: stable
-      # More assembly might be required: Docker logins, GPG, etc.
-      # It all depends on your needs.
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v5
         with:
-          # either 'goreleaser' (default) or 'goreleaser-pro'
           distribution: goreleaser
           version: ${{ env.GITHUB_REF_NAME }}
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
-          # Your GoReleaser Pro key, if you are using the 'goreleaser-pro' distribution
-          # GORELEASER_KEY: ${{ secrets.GORELEASER_KEY }}
+
+  action:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract versions
+        id: extract
+        run: |
+          FULL_TAG="${GITHUB_REF#refs/tags/}"
+          VERSION_NO_V="${FULL_TAG#v}"
+          MAJOR_PART="${VERSION_NO_V%%.*}"
+          MAJOR_TAG="v${MAJOR_PART}"
+
+          echo "full_version=${FULL_TAG}"   >> $GITHUB_OUTPUT
+          echo "major_version=${MAJOR_TAG}" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - name: Create/Update major tag
+        uses: joutvhu/create-tag@v1.0.2
+        with:
+          tag_name: ${{ steps.extract.outputs.major_version }}
+          message: "Action release for ${{ github.ref_name }}, based on ${{ steps.extract.outputs.full_version }}"
+          on_tag_exists: update
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
