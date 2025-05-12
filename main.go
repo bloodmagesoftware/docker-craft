@@ -5,30 +5,92 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"reflect"
 
 	"maps"
 
 	"github.com/bloodmage-software/docker-craft/gh"
 	"github.com/bloodmage-software/docker-craft/link"
+	"github.com/bloodmage-software/docker-craft/metadata"
 	_ "github.com/bloodmage-software/docker-craft/metadata"
+	"github.com/bloodmage-software/docker-craft/ttl"
 	composetypes "github.com/compose-spec/compose-go/v2/types"
 	"github.com/goccy/go-yaml"
 	"github.com/yuin/gluamapper"
 	lua "github.com/yuin/gopher-lua"
 )
 
+var motd = "docker-craft " + metadata.Version + "\n\n" +
+	`Generate: docker craft docker-compose.lua
+Or: docker-craft docker-compose.lua
+
+Install as Docker CLI extension: docker-craft link
+
+Initialize template: docker craft init
+Or: docker-craft init
+`
+
 func main() {
-	var args []string
-	if len(os.Args) > 1 && os.Args[1] == "craft" {
-		args = os.Args[2:]
-	} else {
-		if len(os.Args) > 1 && os.Args[1] == "link" {
+	switch len(os.Args) {
+	case 0, 1:
+		fmt.Print(motd)
+		os.Exit(0)
+	case 2:
+		switch os.Args[1] {
+		case "link":
 			link.Link()
 			return
+		case "init":
+			// no args left
+			cmdInit(nil)
+			return
+		default:
+			fmt.Print(motd)
+			os.Exit(1)
 		}
-		args = os.Args[1:]
+	default:
+		switch os.Args[1] {
+		case "link":
+			link.Link()
+			return
+		case "init":
+			cmdInit(os.Args[2:])
+		case "craft":
+			if len(os.Args) > 2 && os.Args[2] == "init" {
+				cmdInit(os.Args[3:])
+				return
+			}
+			cmdMain(os.Args[2:])
+			return
+		default:
+			cmdMain(os.Args[1:])
+		}
+	}
+}
+
+func cmdInit(args []string) {
+	out := flag.String("o", "docker-compose.lua", "Output file")
+	if err := flag.CommandLine.Parse(args); err != nil {
+		fmt.Fprintf(os.Stderr, "Error parsing flags: %s\n", err)
+		os.Exit(1)
 	}
 
+	fmt.Println("initializing docker-craft template " + *out)
+	f, err := os.Create(*out)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error creating file: %s\n", err)
+		os.Exit(1)
+		return
+	}
+	defer f.Close()
+	configLuaTypeSymbol := ttl.TypeToLua(reflect.TypeOf(composetypes.Config{}))
+	fmt.Fprintln(f, ttl.String())
+	fmt.Fprintf(f, "---@type %s\nlocal config = {\n}\n\nreturn config\n", configLuaTypeSymbol)
+	return
+}
+
+func cmdMain(args []string) {
+	fmt.Printf("main args: %v\n", args)
 	var (
 		out    = flag.String("o", "docker-compose.yaml", "Output file")
 		indent = flag.Uint("i", 2, "Indent")
