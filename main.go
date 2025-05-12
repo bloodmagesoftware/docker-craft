@@ -90,7 +90,6 @@ func cmdInit(args []string) {
 }
 
 func cmdMain(args []string) {
-	fmt.Printf("main args: %v\n", args)
 	var (
 		out    = flag.String("o", "docker-compose.yaml", "Output file")
 		indent = flag.Uint("i", 2, "Indent")
