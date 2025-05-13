@@ -9,12 +9,13 @@ import (
 
 	"maps"
 
+	"github.com/bloodmage-software/docker-craft/composetypes"
+	"github.com/bloodmage-software/docker-craft/docker"
 	"github.com/bloodmage-software/docker-craft/gh"
 	"github.com/bloodmage-software/docker-craft/link"
 	"github.com/bloodmage-software/docker-craft/metadata"
 	_ "github.com/bloodmage-software/docker-craft/metadata"
 	"github.com/bloodmage-software/docker-craft/ttl"
-	composetypes "github.com/compose-spec/compose-go/v2/types"
 	"github.com/goccy/go-yaml"
 	"github.com/yuin/gluamapper"
 	lua "github.com/yuin/gopher-lua"
@@ -93,6 +94,8 @@ func cmdMain(args []string) {
 	var (
 		out    = flag.String("o", "docker-compose.yaml", "Output file")
 		indent = flag.Uint("i", 2, "Indent")
+		up     = flag.Bool("up", false, "Run docker compose up after generating")
+		d      = flag.Bool("d", false, "Add the -d flag to docker compose up")
 	)
 	if err := flag.CommandLine.Parse(args); err != nil {
 		fmt.Fprintf(os.Stderr, "Error parsing flags: %s\n", err)
@@ -154,6 +157,9 @@ func cmdMain(args []string) {
 	ye.Encode(config)
 
 	gh.ActionOutput("docker-compose-file", *out)
+	if *up {
+		docker.ComposeUp(*out, *d)
+	}
 }
 
 func mergeMaps[K comparable, V any](a, b map[K]V) map[K]V {
